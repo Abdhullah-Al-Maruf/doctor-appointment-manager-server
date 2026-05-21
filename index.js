@@ -64,7 +64,26 @@ async function run() {
       const result= await appointments.toArray();
         res.send(result)});
 
+// patch api for update the appointment  card data
 
+app.patch("/appointments/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+  const query = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      patientName: updatedData.patientName,
+      phone: updatedData.phone,
+      userEmail: updatedData.userEmail,
+      appointmentDate: updatedData.appointmentDate,
+      doctorName: updatedData.doctorName,
+      gender: updatedData.gender,
+      appointmentTime: updatedData.appointmentTime,
+    },
+  };
+  const result = await appointmentsCollection.updateOne(query, updateDoc);
+  res.send(result);
+});
 
 
 
