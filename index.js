@@ -29,7 +29,26 @@ await client.connect();
 
 
 
+//  get api for all doctors data
+app.get("/doctors", async (req, res) => {
+  const doctors= doctorsCollection.find({});
+  const result =await doctors.toArray();  
+  res.send(result)
 
+})
+
+// api for single doctor data
+app.get("/doctors/:id",async(req,res)=>{
+  // get the id from the client
+  const id =req.params.id;
+// query for the id
+const query={
+  _id: new ObjectId(id),
+}
+// find the doctor by id
+const doctor= await doctorsCollection.findOne(query);
+res.send(doctor)
+})
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
