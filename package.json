@@ -1,0 +1,19 @@
+{
+  "name": "doctor-appointment-manager-server",
+  "version": "1.0.0",
+  "description": "doctor appointment application",
+  "license": "ISC",
+  "author": "abdhullah-al-maruf",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+   "dev": "node --watch index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {}
+}
