@@ -7,13 +7,13 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-   "dev": "node --watch index.js",
+    "dev": "node --watch index.js",
     "start": "node index.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
-  },
-  "devDependencies": {}
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0"
+  }
 }
