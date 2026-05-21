@@ -32,7 +32,6 @@ async function run() {
       res.send(result);
     });
 
-
     // api for single doctor data
     app.get("/doctors/:id", async (req, res) => {
       // get the id from the client
@@ -48,12 +47,27 @@ async function run() {
     });
 
 
+
+    
     //  post api for add appointment data
-    app.post("/appointments",async(req,res)=>{
-      const appointment =req.body;
-      const result =await appointmentsCollection.insertOne(appointment);
+    app.post("/appointments", async (req, res) => {
+      const appointment = req.body;
+      //  the console should be removed after testing, because it will show the data in the console which is not good for security
+      console.log("data to be inserted ", appointment);
+      const result = await appointmentsCollection.insertOne(appointment);
       res.send(result);
-    })
+    });
+
+    // get api for all appointments data for my-booking page 
+    app.get("/appointments", async (req, res) => {
+      const appointments= appointmentsCollection.find({});
+      const result= await appointments.toArray();
+        res.send(result)});
+
+
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
