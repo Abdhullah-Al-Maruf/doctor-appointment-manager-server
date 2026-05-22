@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 
 // for token verify process we can get help from better-auth doc
 //  now we will verify  the token so we need jwt keyset  it will get from the client link  url/api/auth/jwks  and we will verify the token by using jwt library jose(not work in common js)/jose-cjs and if the token is valid then we will call the next() function to move to the next middleware or route handler
-const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
 //  this function will be used as a middleware for jwt verification .
 const verifyJWT =async (req, res, next) => {
@@ -40,7 +40,8 @@ const verifyJWT =async (req, res, next) => {
   //  now verify using jose-cjs library
   try {
     const { payload } = await jwtVerify(token, JWKS);
-    console.log(payload);
+    // console.log(payload);
+     req.user = payload;
     next();
   } catch (error) {
     return res.status(403).send({ message: "Forbidden access" });
@@ -49,7 +50,7 @@ const verifyJWT =async (req, res, next) => {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const db = client.db("doctor-appointment-data");
     const doctorsCollection = db.collection("doctors");
     const appointmentsCollection = db.collection("appointments");
@@ -86,7 +87,7 @@ async function run() {
     });
 
     // get api for all appointments data for my-booking page
-    app.get("/appointments", async (req, res) => {
+    app.get("/appointments", verifyJWT, async (req, res) => {
       const appointments = appointmentsCollection.find({});
       const result = await appointments.toArray();
       res.send(result);
@@ -94,7 +95,7 @@ async function run() {
 
     // patch api for update the appointment  card data
 
-    app.patch("/appointments/:id", async (req, res) => {
+    app.patch("/appointments/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
       const query = { _id: new ObjectId(id) };
@@ -114,7 +115,7 @@ async function run() {
     });
 
     // create delete api for delete the appointment card data
-    app.delete("/appointments/:id", async (req, res) => {
+    app.delete("/appointments/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await appointmentsCollection.deleteOne(query);
@@ -122,7 +123,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
