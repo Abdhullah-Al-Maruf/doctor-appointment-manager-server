@@ -33,59 +33,70 @@ async function run() {
     });
 
     // api for single doctor data
-    app.get("/doctors/:id", async (req, res) => {
-      // get the id from the client
-      const id = req.params.id;
-      // query for the id
-      const query = {
-        _id: new ObjectId(id),
-      };
 
-      // find the doctor by id
-      const doctor = await doctorsCollection.findOne(query);
-      res.send(doctor);
-    });
+    // ()=> this is the middleware for jwt vefication next we will create a separate  function for jwt vefication and add it here as a middleware
+    app.get( "/doctors/:id", (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        console.log("auth header", authHeader);
+        next();
+      },
+      async (req, res) => {
+        // get the id from the client
+        const id = req.params.id;
+        // query for the id
+        const query = {
+          _id: new ObjectId(id),
+        };
 
+        // find the doctor by id
+        const doctor = await doctorsCollection.findOne(query);
+        res.send(doctor);
+      },
+    );
 
-
-    
     //  post api for add appointment data
     app.post("/appointments", async (req, res) => {
       const appointment = req.body;
-      //  the console should be removed after testing, because it will show the data in the console which is not good for security
-      console.log("data to be inserted ", appointment);
+
       const result = await appointmentsCollection.insertOne(appointment);
       res.send(result);
     });
 
-    // get api for all appointments data for my-booking page 
+    // get api for all appointments data for my-booking page
     app.get("/appointments", async (req, res) => {
-      const appointments= appointmentsCollection.find({});
-      const result= await appointments.toArray();
-        res.send(result)});
+      const appointments = appointmentsCollection.find({});
+      const result = await appointments.toArray();
+      res.send(result);
+    });
 
-// patch api for update the appointment  card data
+    // patch api for update the appointment  card data
 
-app.patch("/appointments/:id", async (req, res) => {
-  const id = req.params.id;
-  const updatedData = req.body;
-  const query = { _id: new ObjectId(id) };
-  const updateDoc = {
-    $set: {
-      patientName: updatedData.patientName,
-      phone: updatedData.phone,
-      userEmail: updatedData.userEmail,
-      appointmentDate: updatedData.appointmentDate,
-      doctorName: updatedData.doctorName,
-      gender: updatedData.gender,
-      appointmentTime: updatedData.appointmentTime,
-    },
-  };
-  const result = await appointmentsCollection.updateOne(query, updateDoc);
-  res.send(result);
-});
+    app.patch("/appointments/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          patientName: updatedData.patientName,
+          phone: updatedData.phone,
+          userEmail: updatedData.userEmail,
+          appointmentDate: updatedData.appointmentDate,
+          doctorName: updatedData.doctorName,
+          gender: updatedData.gender,
+          appointmentTime: updatedData.appointmentTime,
+        },
+      };
+      const result = await appointmentsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
 
-
+    // create delete api for delete the appointment card data
+    app.delete("/appointments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await appointmentsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
