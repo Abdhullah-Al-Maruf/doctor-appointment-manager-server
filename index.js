@@ -3,6 +3,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 const port = 5000;
 
 app.use(cors());
@@ -18,6 +19,34 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+// for token verify process we can get help from better-auth doc
+//  now we will verify  the token so we need jwt keyset  it will get from the client link  url/api/auth/jwks  and we will verify the token by using jwt library jose(not work in common js)/jose-cjs and if the token is valid then we will call the next() function to move to the next middleware or route handler
+const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+
+//  this function will be used as a middleware for jwt verification .
+const verifyJWT =async (req, res, next) => {
+  const authHeader = req?.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  //  we have 2 thing bearer and the token so we will split the authHeader by space and get the token
+  const token = authHeader?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+
+  //  now verify using jose-cjs library
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    console.log(payload);
+    next();
+  } catch (error) {
+    return res.status(403).send({ message: "Forbidden access" });
+  }
+};
+
 async function run() {
   try {
     await client.connect();
@@ -35,24 +64,18 @@ async function run() {
     // api for single doctor data
 
     // ()=> this is the middleware for jwt vefication next we will create a separate  function for jwt vefication and add it here as a middleware
-    app.get( "/doctors/:id", (req, res, next) => {
-        const authHeader = req.headers.authorization;
-        console.log("auth header", authHeader);
-        next();
-      },
-      async (req, res) => {
-        // get the id from the client
-        const id = req.params.id;
-        // query for the id
-        const query = {
-          _id: new ObjectId(id),
-        };
+    app.get("/doctors/:id", verifyJWT, async (req, res) => {
+      // get the id from the client
+      const id = req.params.id;
+      // query for the id
+      const query = {
+        _id: new ObjectId(id),
+      };
 
-        // find the doctor by id
-        const doctor = await doctorsCollection.findOne(query);
-        res.send(doctor);
-      },
-    );
+      // find the doctor by id
+      const doctor = await doctorsCollection.findOne(query);
+      res.send(doctor);
+    });
 
     //  post api for add appointment data
     app.post("/appointments", async (req, res) => {
