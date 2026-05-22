@@ -78,7 +78,7 @@ async function run() {
     });
 
     //  post api for add appointment data
-    app.post("/appointments", async (req, res) => {
+    app.post("/appointments", verifyJWT, async (req, res) => {
       const appointment = req.body;
 
       const result = await appointmentsCollection.insertOne(appointment);
